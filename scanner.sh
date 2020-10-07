@@ -199,17 +199,20 @@ echo "[+] $ipz non-akamai IPs has been collected out of $ip_old IPs!"
 rm ~/recon/$1/$1-ip2.txt
 sleep 5
 
-echo "[+] MASSCAN PORT SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
-	echo $passwordx | sudo -S masscan -p0-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 1000 -oG ~/recon/$1/$1-masscan.txt
-	mass=$(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | wc -l)
-	message "Masscan%20discovered%20$mass%20open%20port(s)%20for%20$1"
-	echo "[+] Done masscan for scanning port(s)"
-else
-	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
+if[ $2 == "portscan" ]; then
+	echo "[+] MASSCAN PORT SCANNING [+]"
+	if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
+		echo $passwordx | sudo -S masscan -p0-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 1000 -oG ~/recon/$1/$1-masscan.txt
+		mass=$(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | wc -l)
+		message "Masscan%20discovered%20$mass%20open%20port(s)%20for%20$1"
+		echo "[+] Done masscan for scanning port(s)"
+	else
+		message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
+		echo "[!] Skipping ..."
+	fi
+	sleep 5
 fi
-sleep 5
+
 
 big_ports=$(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ',')
 cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
@@ -368,19 +371,21 @@ else
 fi
 sleep 5
 
-echo "[+] NMAP PORT SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
-	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
-	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,ssh-brute --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
-	nmaps=$(scanned ~/recon/$1/$1-ip.txt)
-	xsltproc -o ~/recon/$1/$1-nmap.html ~/tools/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
-	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
-	echo "[+] Done nmap for scanning IPs"
-else
-	message "[-]%20Skipping%20Nmap%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
+if[ $2 == "portscan" ]; then
+	echo "[+] NMAP PORT SCANNING [+]"
+	if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
+		[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
+		echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,ssh-brute --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
+		nmaps=$(scanned ~/recon/$1/$1-ip.txt)
+		xsltproc -o ~/recon/$1/$1-nmap.html ~/tools/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
+		message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
+		echo "[+] Done nmap for scanning IPs"
+	else
+		message "[-]%20Skipping%20Nmap%20Scanning%20for%20$1"
+		echo "[!] Skipping ..."
+	fi
+	sleep 5
 fi
-sleep 5
 
 echo "[+] WEBANALYZE SCANNING FOR FINGERPRINTING [+]"
 if [ ! -z $(which webanalyze) ]; then
