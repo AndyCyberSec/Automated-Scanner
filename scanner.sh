@@ -243,7 +243,7 @@ fi
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-tkosubs.txt ] && [ ! -z $(which tko-subs) ]; then
 	[ ! -f ~/tools/providers-data.csv ] && wget "https://raw.githubusercontent.com/anshumanbh/tko-subs/master/providers-data.csv" -O ~/tools/providers-data.csv
-	tko-subs -domains=recon/$1/$1-alive.txt -data=tools/providers-data.csv -output=recon/$1/$1-tkosubs.txt
+	tko-subs -domains=recon/$1/$1-alive.txt -data=/root/tools/providers-data.csv -output=/root/recon/$1/$1-tkosubs.txt
 	message "TKO-Subs%20scanner%20done%20for%20$1"
 	echo "[+] TKO-Subs scanner is done"
 else
@@ -325,7 +325,7 @@ if [ -f ~/tools/smuggler.py ]; then
 	for url in $(cat ~/recon/$1/$1-httprobe.txt); do
 		filename=$(echo $url | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g')
 		echo "Running against: $url"
-		python3 ~/tools/smuggler.py -u "$url/" -v 1 &> ~/recon/$1/http-desync/$filename.txt
+		python3 ~/tools/smuggler.py -u "$url/" -v 1 -l ~/recon/$1/http-desync/$filename.txt --no-color
 	done
 	message "Done%20scanning%20of%20request%20smuggling%20in%20$1"
 	echo "[+] Done scanning of request smuggling"
@@ -337,7 +337,7 @@ sleep 5
 
 echo "[+] ZDNS SCANNING [+]"
 if [ ! -z $(which zdns) ]; then
-	for i in $(cat ~/recon/$1/$1-alive.txt);do echo $i | zdns ANY -output-file - | jq -r '"Name: "+.name+"\t\t Protocol: "+.data.protocol+"\t Resolver: "+.data.resolver+"\t Status: "+.status' >> ~/recon/$1/$1-zdns.txt;done
+	for i in $(cat ~/recon/$1/$1-alive.txt);do echo $i | zdns ANY --name-servers=8.8.8.8,8.8.4.4 -output-file - | jq -r '"Name: "+.name+"\t\t Protocol: "+.data.protocol+"\t Resolver: "+.data.resolver+"\t Status: "+.status' >> ~/recon/$1/$1-zdns.txt;done
 	message "Done%20ZDNS%20Scanning%20for%20$1"
 	echo "[+] Done ZDNS for scanning assets"
 else
