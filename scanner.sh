@@ -199,7 +199,7 @@ echo "[+] $ipz non-akamai IPs has been collected out of $ip_old IPs!"
 rm ~/recon/$1/$1-ip2.txt
 sleep 5
 
-if[ $2 == "portscan" ]; then
+if [ $2 = "portscan" ]; then
 	echo "[+] MASSCAN PORT SCANNING [+]"
 	if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
 		echo $passwordx | sudo -S masscan -p0-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 1000 -oG ~/recon/$1/$1-masscan.txt
