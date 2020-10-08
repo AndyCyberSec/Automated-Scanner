@@ -211,12 +211,12 @@ if[ $2 == "portscan" ]; then
 		echo "[!] Skipping ..."
 	fi
 	sleep 5
+	
+	big_ports=$(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ',')
+	cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
+	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 fi
 
-
-big_ports=$(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ',')
-cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
-cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 
 echo "[+] HTTProbe Scanning Alive Hosts [+]"
 if [ ! -f ~/recon/$1/$1-httprobe.txt ] && [ ! -z $(which httprobe) ]; then
